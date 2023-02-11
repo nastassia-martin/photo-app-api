@@ -1,4 +1,7 @@
-# FED22 API-utveckling Prisma Boilerplate
+# Photo App API
+This is a REST API with authentication that will be able to function as the backend for a future photo app.
+
+## FED22 API-utveckling Prisma Boilerplate
 
 This is a starter template/boilerplate for a TypeScript Node.js REST API using Express, Prisma and Express-validator.
 
