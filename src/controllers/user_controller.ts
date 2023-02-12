@@ -3,9 +3,10 @@
  */
 import bcrypt from 'bcrypt'
 import Debug from 'debug'
+import jwt from 'jsonwebtoken'
 import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
-import { newUser } from '../services/user_service'
+import { newUser, getUserbyEmail } from '../services/user_service'
 import prisma from '../prisma'
 
 // Create a new debug instance
@@ -68,8 +69,47 @@ export const register = async (req: Request, res: Response) => {
  */
 
 export const login = async (req: Request, res: Response) => {
+    // user puts in email & password in request
+    const { email, password } = req.body
+
+    // find the user via their email, otherwise: not today!
+    const user = await getUserbyEmail(email)
+
+    // if no user, then throw 401, not found, return so no further messages are sent
+    if (!user) {
+        return res.status(401).send({
+            status: "fail",
+            message: "User not found"
+        })
+    }
+    // verify user password against hash, otherise: not today
+    const result = await bcrypt.compare(password, user.password)
+    if (!result) {
+        return res.status(401).send({
+            status: "fail",
+            message: "Authhorization required"
+        })
+    }
+    //construct jwt-payload
+
+    const payload = {
+        sub: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name
+    }
+
+    //sign payload with secret and get access token
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+        return res.status(500).send({
+            status: "fail",
+            message: "No access token defined"
+        })
+    }
+    const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET)
+
+    // respond with access token
     res.send({
         status: "success",
-        data: null
+        data: access_token,
     })
 }
