@@ -1,6 +1,6 @@
 import express from "express"
 import { createUserRules } from '../validations/user_rules'
-import { register } from "../controllers/register_controller"
+import { register } from "../controllers/user_controller"
 //import albums 
 //import photos
 //import profile from users
@@ -51,6 +51,7 @@ router.post('/register', createUserRules, register)
 /**
  * /login
  */
+router.post('/login',)
 
 /**
  * /refresh
