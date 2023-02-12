@@ -1,5 +1,12 @@
 import express from "express"
-import resource from './_router'
+import { createUserRules } from '../validations/user_rules'
+import { register } from "../controllers/register_controller"
+//import albums 
+//import photos
+//import profile from users
+// import controllers / varioous
+// import validate token OR http basic
+// import validations / various
 
 // instantiate a new router
 const router = express.Router()
@@ -9,7 +16,7 @@ const router = express.Router()
  */
 router.get('/', (req, res) => {
 	res.send({
-		message: "I AM API, BEEP BOOP",
+		message: "<Welcome to your photo app, beep boop>",
 	})
 })
 
@@ -17,5 +24,36 @@ router.get('/', (req, res) => {
  * [EXAMPLE] /resource
  */
 // router.use('/resource', resource)
+
+/**
+ * /albums
+ */
+
+/**
+ * /photos
+ */
+
+/**
+ * /profile
+ */
+
+/**
+ * POST /
+ */
+
+/**
+ * /register
+ * @todo add validation rules for email, password, first_name & last_name
+ * @todo move rules to it's own file
+ */
+router.post('/register', createUserRules, register)
+
+/**
+ * /login
+ */
+
+/**
+ * /refresh
+ */
 
 export default router
