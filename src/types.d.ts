@@ -8,3 +8,12 @@ export type CreateNewUser = {
     email: string,
     password: string
 }
+
+export type JWTPayload = {
+    sub: number,
+    first_name: string,
+    last_name: string,
+    email: string,
+    iat?: number,
+    exp?: number
+}
