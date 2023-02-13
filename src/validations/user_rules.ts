@@ -28,6 +28,4 @@ export const createUserRules = [
         }
     }),
     body('password').isString().isLength({ min: 6 })
-
-
 ]

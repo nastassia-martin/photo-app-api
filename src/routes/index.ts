@@ -1,6 +1,8 @@
 import express from "express"
 import { createUserRules } from '../validations/user_rules'
 import { register, login } from "../controllers/user_controller"
+import profile from './profile'
+import { validationToken } from "../middlewares/auth/jwt"
 //import albums 
 //import photos
 //import profile from users
@@ -36,7 +38,7 @@ router.get('/', (req, res) => {
 /**
  * /profile
  */
-
+router.use('/profile', validationToken, profile)
 /**
  * POST /
  */
@@ -50,6 +52,7 @@ router.post('/register', createUserRules, register)
 
 /**
  * /login
+ * @todo add JWT to login to ensure user is authenticated
  */
 router.post('/login', login)
 
