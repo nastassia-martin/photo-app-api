@@ -8,6 +8,7 @@ import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import { newUser, getUserbyEmail } from '../services/user_service'
 import prisma from '../prisma'
+import { JWTPayload } from '../types'
 
 // Create a new debug instance
 const debug = Debug('photo-api:register_controller 📝')
@@ -92,10 +93,11 @@ export const login = async (req: Request, res: Response) => {
     }
     //construct jwt-payload
 
-    const payload = {
+    const payload: JWTPayload = {
         sub: user.id,
         first_name: user.first_name,
-        last_name: user.last_name
+        last_name: user.last_name,
+        email: user.email
     }
 
     //sign payload with secret and get access token
