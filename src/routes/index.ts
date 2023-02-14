@@ -1,8 +1,9 @@
 import express from "express"
 import { createUserRules } from '../validations/user_rules'
 import { register, login } from "../controllers/user_controller"
-import profile from './profile'
 import { validationToken } from "../middlewares/auth/jwt"
+import profile from './profile'
+import photos from './photos'
 //import albums 
 //import photos
 //import profile from users
@@ -34,6 +35,7 @@ router.get('/', (req, res) => {
 /**
  * /photos
  */
+router.use('/photos', photos)
 
 /**
  * /profile
