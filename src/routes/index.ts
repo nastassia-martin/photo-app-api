@@ -35,7 +35,7 @@ router.get('/', (req, res) => {
 /**
  * /photos
  */
-router.use('/photos', photos)
+router.use('/photos', validationToken, photos)
 
 /**
  * /profile
