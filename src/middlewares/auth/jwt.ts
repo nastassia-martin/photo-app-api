@@ -43,10 +43,11 @@ export const validationToken = (req: Request, res: Response, next: NextFunction)
     // Verify token and attach payload to request, else fail
     try {
         const payload = (jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || "") as unknown) as JWTPayload
-        debug("payload: ", payload)
+        console.log("payload: ", payload)
 
         // attach user to payload
-        req.user = payload
+        req.token = payload
+        console.log("payload:", payload)
     }
     catch (err) {
         debug("token not verified")

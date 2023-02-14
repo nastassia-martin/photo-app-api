@@ -112,6 +112,6 @@ export const login = async (req: Request, res: Response) => {
     // respond with access token
     res.send({
         status: "success",
-        data: access_token,
+        access_token: access_token,
     })
 }
