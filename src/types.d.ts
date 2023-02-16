@@ -8,7 +8,6 @@ export type CreateNewUser = {
     email: string,
     password: string
 }
-
 export type JWTPayload = {
     sub: number,
     first_name: string,
@@ -17,3 +16,20 @@ export type JWTPayload = {
     iat?: number,
     exp?: number
 }
+/**
+ * Photos
+ */
+
+export type ReadPhotoData = {
+    title: string,
+    url: string,
+    comment: string,
+    userId: number
+}
+export type CreateNewPhoto = {
+    title: string,
+    url: string,
+    comment: string,
+    userId: number
+}
+
