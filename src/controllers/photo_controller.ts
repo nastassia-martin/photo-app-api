@@ -15,12 +15,27 @@ const debug = Debug('photo-api:photo_controller 📝')
  * 
  */
 export const index = async (req: Request, res: Response) => {
+
+
     //check that the user is verified  with the req token
-    const photos = await getPhotos(req.token!.sub)
-    res.send({
-        status: "success",
-        data: photos
-    })
+
+    // no photos for the user? 
+    // res.send 404 - we couldn't find any photos!
+    //need to remove userId
+    try {
+        const photos = await getPhotos(req.token!.sub)
+        console.log(photos)
+        res.status(200)
+            .send({
+                status: "success",
+                data: photos,
+            })
+    } catch (err) {
+        res.status(500).send({ message: "Something went wrong" })
+    }
+
+
+
 }
 
 
@@ -28,10 +43,26 @@ export const index = async (req: Request, res: Response) => {
  * Get a single photo from an authenticated user
  */
 export const show = async (req: Request, res: Response) => {
-    res.send({
-        status: "success",
-        data: null
-    })
+    const photoId = Number(req.params.photoId)
+
+    try {
+        if (!photoId) {
+            console.log(photoId)
+            return res.status(401).send({ status: "fail", message: "no photo found!" })
+        }
+
+        const photo = await prisma.photo.findUniqueOrThrow({
+            where: {
+                id: photoId,
+            }
+        })
+
+        res.status(200).send({ status: "success", data: photo })
+    }
+    catch (err) {
+        res.status(500).send({ status: "error", message: "Something went wrong" })
+    }
+
 }
 
 /**
@@ -50,6 +81,7 @@ export const store = async (req: Request, res: Response) => {
 
     try {
         const newPhoto = await createPhoto(photoInput, Number(req.token!.sub))
+
 
         res.status(201).send({ status: "success", data: newPhoto })
 
