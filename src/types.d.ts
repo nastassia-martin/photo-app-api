@@ -20,16 +20,15 @@ export type JWTPayload = {
  * Photos
  */
 
-export type ReadPhotoData = {
-    title: string,
-    url: string,
-    comment: string,
-    userId: number
-}
+
 export type CreateNewPhoto = {
     title: string,
     url: string,
     comment: string,
     userId: number
 }
-
+export type UpdatePhotoData = {
+    title?: string,
+    url?: string,
+    comment?: string,
+}

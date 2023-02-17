@@ -4,7 +4,7 @@
  */
 import { connect } from 'http2'
 import prisma from '../prisma'
-import { CreateNewPhoto } from '../types'
+import { CreateNewPhoto, UpdatePhotoData } from '../types'
 
 /**
  * Get all photos
@@ -17,6 +17,12 @@ export const getPhotos = async (userId: number) => {
     return await prisma.photo.findMany({
         where: {
             userId: userId
+        },
+        select: {
+            id: true,
+            title: true,
+            url: true,
+            comment: true
         }
     })
 }
@@ -25,6 +31,7 @@ export const getPhotos = async (userId: number) => {
 
 /**
  * Create a photo
+ * 
  */
 export const createPhoto = async (data: CreateNewPhoto, userId: number) => {
 
@@ -35,6 +42,21 @@ export const createPhoto = async (data: CreateNewPhoto, userId: number) => {
             comment: data.comment,
             userId: userId
         },
+    })
+
+}
+
+/**
+ * Update a photo
+ * 
+ */
+export const updatePhoto = async (userId: number, data: UpdatePhotoData,) => {
+
+    return await prisma.photo.update({
+        where: {
+            id: userId,
+        },
+        data: data,
     })
 
 }

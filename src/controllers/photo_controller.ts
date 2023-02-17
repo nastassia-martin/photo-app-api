@@ -4,7 +4,7 @@
 import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult, matchedData } from 'express-validator'
-import { getPhotos, createPhoto } from '../services/photo_service'
+import { getPhotos, createPhoto, updatePhoto } from '../services/photo_service'
 import prisma from '../prisma'
 
 // Create a new debug instance
@@ -15,32 +15,30 @@ const debug = Debug('photo-api:photo_controller 📝')
  * 
  */
 export const index = async (req: Request, res: Response) => {
-
-
     //check that the user is verified  with the req token
-
-    // no photos for the user? 
-    // res.send 404 - we couldn't find any photos!
     //need to remove userId
     try {
         const photos = await getPhotos(req.token!.sub)
-        console.log(photos)
-        res.status(200)
-            .send({
-                status: "success",
-                data: photos,
+        if (!photos) {
+            return res.status(404).send({
+                status: "fail",
+                message: "no photos found"
             })
+        }
+        console.log(photos)
+        return res.status(200).send({
+            status: "success",
+            data: photos,
+        })
     } catch (err) {
-        res.status(500).send({ message: "Something went wrong" })
+        return res.status(500).send({ message: "Something went wrong" })
     }
-
-
-
 }
 
 
 /**
  * Get a single photo from an authenticated user
+ * @todo move prisma logic to service folder
  */
 export const show = async (req: Request, res: Response) => {
     const photoId = Number(req.params.photoId)
@@ -52,17 +50,19 @@ export const show = async (req: Request, res: Response) => {
         }
 
         const photo = await prisma.photo.findUniqueOrThrow({
-            where: {
-                id: photoId,
-            }
+            where: { id: photoId, },
+            select: {
+                id: true,
+                title: true,
+                url: true,
+                comment: true
+            },
         })
-
-        res.status(200).send({ status: "success", data: photo })
+        return res.status(200).send({ status: "success", data: photo })
     }
     catch (err) {
         res.status(500).send({ status: "error", message: "Something went wrong" })
     }
-
 }
 
 /**
@@ -94,12 +94,34 @@ export const store = async (req: Request, res: Response) => {
 
 /**
  * Update a photo from an authenticated user
+ *  * @todo move prisma logic to service folder
+
  */
 export const update = async (req: Request, res: Response) => {
-    res.send({
-        status: "success",
-        data: null
-    })
+
+    // check for validation errors
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+        return res.status(400).send({
+            status: "fail",
+            data: validationErrors.array(),
+        })
+    }
+    // Get only the validated data from the request
+    const validatedData = matchedData(req)
+
+    try {
+        const photoData = await updatePhoto(req.token!.sub, validatedData)
+
+        return res.status(200).send({ status: "success", data: photoData })
+
+    } catch {
+        return res.status(500).send({ status: "error", message: "Could not update photo in database" })
+
+    }
+
+
+
 }
 
 /**
