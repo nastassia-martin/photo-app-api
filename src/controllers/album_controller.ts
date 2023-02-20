@@ -16,7 +16,7 @@ const debug = Debug('photo-api:album_controller 📝')
 export const index = async (req: Request, res: Response) => {
     try {
         const albums = await getAlbums(req.token!.sub)
-        res.send({
+        return res.send({
             status: "success",
             data: albums,
         })
@@ -83,18 +83,37 @@ export const store = async (req: Request, res: Response) => {
 
 /**
  * add photo to album
+ * @todo move prisma logic to album_service folder
  */
 export const storePhototoAlbum = async (req: Request, res: Response) => {
-    // validate data
-    try {
-        // const newalbums = await prisma.album.create({
-        //     // data: {
 
-        //     }
-        // })
-        res.send({
+    const albumId = Number(req.params.albumId)
+    const photoId = Number(req.body.photoId)
+    const userId = Number(req.token!.sub)
+
+
+    try {
+        // if user is not authorized to view album then 403
+        // if photoId doesn't exist then 404
+        // connect 
+
+
+        const result = await prisma.album.update({
+            // we are querying a specific album
+            where: {
+                id: albumId,
+            },
+            // we are updating this photo
+            data: {
+                photos: {
+                    connect: { id: photoId }
+                }
+            }
+        })
+
+        res.status(200).send({
             status: "success",
-            data: null,
+            data: result,
         })
     } catch (err) {
         res.status(500).send({ status: "error", message: "Something went wrong" })

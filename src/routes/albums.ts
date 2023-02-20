@@ -24,7 +24,7 @@ router.post('/', albumRules, store)
 /**
  * POST /albums/:albumId/photos
  */
-router.post('/', albumRules, storePhototoAlbum)
+router.post('/:albumId/photos', albumRules, storePhototoAlbum)
 
 /**
  * PATCH /albums/:albumId

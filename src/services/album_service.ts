@@ -3,7 +3,7 @@
  * Here we host Prisma logic (ie queries)
  */
 import prisma from '../prisma'
-import { CreateNewAlbum, CreateNewPhoto, UpdateAlbumData, UpdatePhotoData } from '../types'
+import { CreateNewAlbum, UpdateAlbumData, } from '../types'
 
 /**
  * Get all albums
@@ -43,8 +43,6 @@ export const getalbum = async (albumId: number) => {
     })
 }
 
-
-
 /**
  * Create an album
  * 
@@ -74,3 +72,12 @@ export const updateAlbum = async (userId: number, data: UpdateAlbumData,) => {
     })
 
 }
+
+/**
+ * Add photo to an album
+ * will need 3 params, userId, albumId & photoId
+ * need to check userid is connected to albumid - if not reject
+ * need to check photoId exists - if not reject
+ * connect photoId to albumId
+ */
+export const addPhoto = async () => { }
