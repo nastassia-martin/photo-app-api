@@ -10,5 +10,5 @@ import prisma from '../prisma'
  */
 
 export const albumRules = [
-    body('title').isString().bail().isLength({ min: 3 }).withMessage("Your title is too short!")
+    body('title').isString().trim().bail().isLength({ min: 3 }).withMessage("Your title is too short!")
 ]

@@ -14,8 +14,8 @@ import prisma from '../prisma'
 
 export const createUserRules = [
     body('first_name').isString().bail().isLength({ min: 3 }),
-    body('last_name').isString().bail().isLength({ min: 3 }),
-    body('email').isEmail().custom(async value => {
+    body('last_name').isString().trim().bail().isLength({ min: 3 }),
+    body('email').isEmail().normalizeEmail().custom(async value => {
         // Check if email already exists
         const user = await prisma.user.findUnique({
             where: {
@@ -27,5 +27,5 @@ export const createUserRules = [
             return Promise.reject("This email already exists")
         }
     }),
-    body('password').isString().isLength({ min: 6 })
+    body('password').isString().trim().isLength({ min: 6 })
 ]
