@@ -27,6 +27,25 @@ export const getPhotos = async (userId: number) => {
     })
 }
 
+/**
+ * Get 1 photo
+ * 
+ */
+export const getPhoto = async (photoId: number) => {
+    return await prisma.photo.findUniqueOrThrow({
+        where: {
+            id: photoId
+        },
+        select: {
+            userId: true,
+            id: true,
+            title: true,
+            url: true,
+            comment: true
+        }
+    })
+}
+
 
 
 /**

@@ -4,11 +4,11 @@
 import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult, matchedData } from 'express-validator'
-import { getPhotos, createPhoto, updatePhoto } from '../services/photo_service'
+import { getPhotos, createPhoto, updatePhoto, getPhoto } from '../services/photo_service'
 import prisma from '../prisma'
 
 // Create a new debug instance
-const debug = Debug('photo-api:photo_controller 📝')
+const debug = Debug('photo-api:album_controller 📝')
 
 /**
  * Get all photos from an authenticated user
@@ -38,30 +38,33 @@ export const index = async (req: Request, res: Response) => {
 
 /**
  * Get a single photo from an authenticated user
- * @todo move prisma logic to service folder
  */
 export const show = async (req: Request, res: Response) => {
     const photoId = Number(req.params.photoId)
+    const userId = Number(req.token!.sub)
+
 
     try {
-        if (!photoId) {
-            console.log(photoId)
-            return res.status(401).send({ status: "fail", message: "no photo found!" })
+        const photo = await getPhoto(photoId)
+
+        if (photo.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this photo"
+            });
         }
 
-        const photo = await prisma.photo.findUniqueOrThrow({
-            where: { id: photoId, },
-            select: {
-                id: true,
-                title: true,
-                url: true,
-                comment: true
-            },
+        return res.status(200).send({
+            status: "success", data: {
+                id: photo.id,
+                title: photo.title,
+                url: photo.url,
+                comment: photo.comment
+            }
         })
-        return res.status(200).send({ status: "success", data: photo })
     }
     catch (err) {
-        res.status(500).send({ status: "error", message: "Something went wrong" })
+        res.status(404).send({ status: "error", message: "no photo found" })
     }
 }
 
@@ -94,7 +97,6 @@ export const store = async (req: Request, res: Response) => {
 
 /**
  * Update a photo from an authenticated user
- *  * @todo move prisma logic to service folder
 
  */
 export const update = async (req: Request, res: Response) => {
@@ -117,7 +119,6 @@ export const update = async (req: Request, res: Response) => {
 
     } catch {
         return res.status(500).send({ status: "error", message: "Could not update photo in database" })
-
     }
 
 
