@@ -5,7 +5,7 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult } from 'express-validator'
 import prisma from '../prisma'
-import { createAlbum } from '../services/album_service'
+import { createAlbum, getAlbums } from '../services/album_service'
 
 // Create a new debug instance
 const debug = Debug('photo-api:album_controller 📝')
@@ -15,10 +15,10 @@ const debug = Debug('photo-api:album_controller 📝')
  */
 export const index = async (req: Request, res: Response) => {
     try {
-        const albums = await prisma.album.findMany()
+        const albums = await getAlbums(req.token!.sub)
         res.send({
             status: "success",
-            data: null,
+            data: albums,
         })
     } catch (err) {
         res.status(500).send({ status: "error", message: "Something went wrong" })
