@@ -5,7 +5,7 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult } from 'express-validator'
 import prisma from '../prisma'
-import { createAlbum, getAlbums } from '../services/album_service'
+import { createAlbum, getalbum, getAlbums } from '../services/album_service'
 
 // Create a new debug instance
 const debug = Debug('photo-api:album_controller 📝')
@@ -29,12 +29,29 @@ export const index = async (req: Request, res: Response) => {
  * Get a single albums and albums photos
  */
 export const show = async (req: Request, res: Response) => {
+    const albumId = Number(req.params.albumId)
+    const userId = Number(req.token!.sub)
+
     try {
-        const album = await prisma.album.findUniqueOrThrow()
-        res.send({
+        const album = await getalbum(albumId)
+
+        if (album.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this photo"
+            });
+        }
+
+        res.status(200).send({
             status: "success",
-            data: null,
+            data: {
+                id: album.id,
+                title: album.title,
+                photos: album.photos
+            }
         })
+
+
     } catch (err) {
         res.status(500).send({ status: "error", message: "Something went wrong" })
     }
