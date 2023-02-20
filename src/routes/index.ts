@@ -4,6 +4,8 @@ import { register, login } from "../controllers/user_controller"
 import { validationToken } from "../middlewares/auth/jwt"
 import profile from './profile'
 import photos from './photos'
+import albums from './albums'
+
 //import albums 
 //import photos
 //import profile from users
@@ -31,7 +33,7 @@ router.get('/', (req, res) => {
 /**
  * /albums
  */
-
+router.use('/albums', validationToken, albums)
 /**
  * /photos
  */
