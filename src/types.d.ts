@@ -20,7 +20,6 @@ export type JWTPayload = {
  * Photos
  */
 
-
 export type CreateNewPhoto = {
     title: string,
     url: string,
@@ -31,4 +30,12 @@ export type UpdatePhotoData = {
     title?: string,
     url?: string,
     comment?: string,
+}
+
+/**
+ * Albums
+ */
+export type CreateNewAlbum = {
+    title: string
+    userId: number
 }
