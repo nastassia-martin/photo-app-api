@@ -5,9 +5,10 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult } from 'express-validator'
 import prisma from '../prisma'
+import { createAlbum } from '../services/album_service'
 
 // Create a new debug instance
-const debug = Debug('prisma-boilerplate:I_AM_LAZY_AND_HAVE_NOT_CHANGED_THIS_😛')
+const debug = Debug('photo-api:album_controller 📝')
 
 /**
  * Get all albums, no photos
@@ -43,12 +44,20 @@ export const show = async (req: Request, res: Response) => {
  * Create an album
  */
 export const store = async (req: Request, res: Response) => {
-    // validate data
+    // validate album
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+        return res.status(400).send({
+            status: "fail",
+            data: validationErrors.array(),
+        })
+    }
+    const albumInput = req.body
     try {
-        // prisma create album
+        const album = await createAlbum(albumInput, Number(req.token!.sub))
         res.send({
             status: "success",
-            data: null,
+            data: album,
         })
     } catch (err) {
         res.status(500).send({ status: "error", message: "Something went wrong" })
@@ -58,7 +67,7 @@ export const store = async (req: Request, res: Response) => {
 /**
  * add photo to album
  */
-export const storePhoto = async (req: Request, res: Response) => {
+export const storePhototoAlbum = async (req: Request, res: Response) => {
     // validate data
     try {
         // const newalbums = await prisma.album.create({

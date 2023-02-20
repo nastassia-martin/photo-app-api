@@ -8,7 +8,7 @@ import { getPhotos, createPhoto, updatePhoto, getPhoto } from '../services/photo
 import prisma from '../prisma'
 
 // Create a new debug instance
-const debug = Debug('photo-api:album_controller 📝')
+const debug = Debug('photo-api:photo_controller 📝')
 
 /**
  * Get all photos from an authenticated user
