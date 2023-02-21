@@ -80,4 +80,16 @@ export const updateAlbum = async (userId: number, data: UpdateAlbumData,) => {
  * need to check photoId exists - if not reject
  * connect photoId to albumId
  */
-export const addPhoto = async () => { }
+export const addPhoto = async (albumId: number, photoId: number) => {
+    return await prisma.album.update({
+        where: {
+            id: albumId
+        },
+        data: {
+            photos: {
+                connect: { id: photoId }
+            },
+        },
+    })
+}
+
