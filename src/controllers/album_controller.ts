@@ -5,7 +5,8 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import prisma from '../prisma'
-import { createAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
+import { addPhoto, createAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
+import { getPhoto } from '../services/photo_service'
 
 // Create a new debug instance
 const debug = Debug('photo-api:album_controller 📝')
@@ -14,9 +15,17 @@ const debug = Debug('photo-api:album_controller 📝')
  * Get all albums, no photos
  */
 export const index = async (req: Request, res: Response) => {
+    const userId = Number(req.token!.sub)
+    if (!userId) {
+        return res.status(401).send({
+            status: "fail",
+            message: "you are not authorized to view this album"
+        })
+    }
     try {
-        const albums = await getAlbums(req.token!.sub)
-        return res.send({
+        const albums = await getAlbums(userId)
+        console.log(albums)
+        return res.status(200).send({
             status: "success",
             data: albums,
         })
@@ -34,15 +43,13 @@ export const show = async (req: Request, res: Response) => {
 
     try {
         const album = await getalbum(albumId)
-
         if (album.userId !== userId) {
             return res.status(403).send({
                 status: "fail",
-                message: "Not authorized to access this photo"
-            });
+                message: "Not authorized to access this album"
+            })
         }
-
-        res.status(200).send({
+        return res.status(200).send({
             status: "success",
             data: {
                 id: album.id,
@@ -53,7 +60,7 @@ export const show = async (req: Request, res: Response) => {
 
 
     } catch (err) {
-        res.status(500).send({ status: "error", message: "Something went wrong" })
+        res.status(404).send({ status: "fail", message: "No album found" })
     }
 }
 
@@ -83,7 +90,6 @@ export const store = async (req: Request, res: Response) => {
 
 /**
  * add photo to album
- * @todo move prisma logic to album_service folder
  */
 export const storePhototoAlbum = async (req: Request, res: Response) => {
 
@@ -93,30 +99,30 @@ export const storePhototoAlbum = async (req: Request, res: Response) => {
 
 
     try {
-        // if user is not authorized to view album then 403
-        // if photoId doesn't exist then 404
-        // connect 
+        const connectedAlbum = await getalbum(albumId)
+        if (connectedAlbum.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this album"
+            })
 
+        }
+        const connectedPhoto = await getPhoto(photoId)
+        if (connectedPhoto.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this photo"
+            })
+        }
 
-        const result = await prisma.album.update({
-            // we are querying a specific album
-            where: {
-                id: albumId,
-            },
-            // we are updating this photo
-            data: {
-                photos: {
-                    connect: { id: photoId }
-                }
-            }
-        })
+        const photo = await addPhoto(connectedAlbum.id, connectedPhoto.id)
 
         res.status(200).send({
             status: "success",
-            data: result,
+            data: null,
         })
     } catch (err) {
-        res.status(500).send({ status: "error", message: "Something went wrong" })
+        res.status(404).send({ status: "error", message: "Photo doesn't exist" })
     }
 }
 
