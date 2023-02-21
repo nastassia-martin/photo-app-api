@@ -48,12 +48,11 @@ export const show = async (req: Request, res: Response) => {
         const photo = await getPhoto(photoId)
 
         if (photo.userId !== userId) {
-            return res.status(403).send({
+            return res.status(401).send({
                 status: "fail",
                 message: "Not authorized to access this photo"
-            });
+            })
         }
-
         return res.status(200).send({
             status: "success", data: {
                 id: photo.id,
@@ -64,10 +63,9 @@ export const show = async (req: Request, res: Response) => {
         })
     }
     catch (err) {
-        res.status(404).send({ status: "error", message: "no photo found" })
+        res.status(404).send({ status: "fail", message: "no photo found" })
     }
 }
-
 /**
  * Create a photo from an authenticated user
  */
@@ -81,10 +79,17 @@ export const store = async (req: Request, res: Response) => {
         })
     }
     const photoInput = req.body
+    const userId = Number(req.token!.sub)
+
+    if (!userId) {
+        return res.status(401).send({
+            status: "fail",
+            message: "Not authorized to post this photo"
+        })
+    }
 
     try {
-        const newPhoto = await createPhoto(photoInput, Number(req.token!.sub))
-
+        const newPhoto = await createPhoto(photoInput, userId)
 
         res.status(201).send({ status: "success", data: newPhoto })
 
@@ -93,11 +98,8 @@ export const store = async (req: Request, res: Response) => {
     }
 }
 
-
-
 /**
  * Update a photo from an authenticated user
-
  */
 export const update = async (req: Request, res: Response) => {
 
@@ -111,18 +113,22 @@ export const update = async (req: Request, res: Response) => {
     }
     // Get only the validated data from the request
     const validatedData = matchedData(req)
+    const userId = Number(req.token!.sub)
+
+    if (!userId) {
+        return res.status(401).send({
+            status: "fail",
+            message: "Not authorized to post this photo"
+        })
+    }
 
     try {
-        const photoData = await updatePhoto(req.token!.sub, validatedData)
-
+        const photoData = await updatePhoto(userId, validatedData)
         return res.status(200).send({ status: "success", data: photoData })
 
     } catch {
         return res.status(500).send({ status: "error", message: "Could not update photo in database" })
     }
-
-
-
 }
 
 /**
