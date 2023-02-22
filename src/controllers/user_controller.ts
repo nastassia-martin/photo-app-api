@@ -15,8 +15,6 @@ const debug = Debug('photo-api:register_controller 📝')
 
 /**
  * Register a new user
- *  * @todo validate incoming data and bail if validation fails
- * router.post('/register', [], register)
  */
 export const register = async (req: Request, res: Response) => {
 
@@ -110,12 +108,86 @@ export const login = async (req: Request, res: Response) => {
 
     // give access token a lifetime
     const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '4h',
+        expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '1m',
     })
 
-    // respond with access token
+
+    // sign payload with refresh-token secre and get refresh-token
+    if (!process.env.REFRESH_TOKEN_SECRET) {
+        return res.status(500).send({
+            status: "error",
+            message: "No refresh token secret defined"
+        })
+    }
+
+    const refresh_token = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: process.env.REFRESH_TOKEN_LIFETIME || '4H'
+    })
+
+    // respond with access token & refresh token
     res.send({
         status: "success",
         access_token: access_token,
+        refresh_token: refresh_token
     })
+}
+
+/**
+ * Refresh token
+ */
+
+export const refresh = async (req: Request, res: Response) => {
+    if (!req.headers.authorization) {
+        debug("Authorization headers missing")
+
+        return res.status(401).send({
+            status: "fail",
+            data: "Authorization required"
+        })
+    }
+    // Split authorization header on ' '
+    const [authSchema, token] = req.headers.authorization.split(" ")
+
+    // Ensure Authorization schema is "Bearer", otherwise bail
+    if (authSchema.toLowerCase() !== "bearer") {
+        return res.status(401).send({
+            status: "fail",
+            data: "Authorization required"
+        })
+    }
+    try {
+        // Verify refresh-token using refresh-token secret
+        const payload = (jwt.verify(token, process.env.REFRESH_TOKEN_SECRET || "") as unknown) as JWTPayload
+
+        // remove `iat` and `exp` from payload
+        delete payload.iat
+        delete payload.exp
+
+        // Issue a new access token
+        if (!process.env.ACCESS_TOKEN_SECRET) {
+            return res.status(500).send({
+                status: "error",
+                message: "No access token secret defined",
+            })
+        }
+        const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '4h',
+        })
+
+        // Respond with new access token
+        res.send({
+            status: "success",
+            data: {
+                access_token,
+            },
+        })
+
+    } catch (err) {
+        debug("Token failed verification", err)
+
+        return res.status(401).send({
+            status: "fail",
+            data: "Authorization required",
+        })
+    }
 }
