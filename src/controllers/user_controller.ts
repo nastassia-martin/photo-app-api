@@ -108,7 +108,7 @@ export const login = async (req: Request, res: Response) => {
 
     // give access token a lifetime
     const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '1m',
+        expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '1H',
     })
 
 
