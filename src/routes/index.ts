@@ -1,17 +1,10 @@
 import express from "express"
 import { createUserRules } from '../validations/user_rules'
-import { register, login } from "../controllers/user_controller"
+import { register, login, refresh } from "../controllers/user_controller"
 import { validationToken } from "../middlewares/auth/jwt"
 import profile from './profile'
 import photos from './photos'
 import albums from './albums'
-
-//import albums 
-//import photos
-//import profile from users
-// import controllers / varioous
-// import validate token OR http basic
-// import validations / various
 
 // instantiate a new router
 const router = express.Router()
@@ -49,19 +42,17 @@ router.use('/profile', validationToken, profile)
 
 /**
  * /register
- * @todo add validation rules for email, password, first_name & last_name
- * @todo move rules to it's own file
  */
 router.post('/register', createUserRules, register)
 
 /**
  * /login
- * @todo add JWT to login to ensure user is authenticated
  */
 router.post('/login', login)
 
 /**
  * /refresh
  */
+router.post('/refresh', refresh)
 
 export default router
