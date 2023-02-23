@@ -133,8 +133,16 @@ export const update = async (req: Request, res: Response) => {
 
 /**
  * Delete a photo from an authenticated user, including links to album(s), but not album(s) itself
+ * @todo: throw error if user doens't have authority
+ * @todo: throw error if photo not found
+ * @todo: delete photo
  */
 export const destroy = async (req: Request, res: Response) => {
+    const photoId = Number(req.params.photoId)
+    const userId = Number(req.token!.sub)
+
+    // call GetPhoto() which will verify that user has authoity to delete, and that the photo exists
+
     res.send({
         status: "success",
         data: null
