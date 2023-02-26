@@ -93,3 +93,17 @@ export const addPhoto = async (albumId: number, photoId: number) => {
     })
 }
 
+/**
+ * Delete a album
+ * 
+ */
+export const deleteAlbum = async (albumId: number) => {
+
+    return await prisma.album.delete({
+        where: {
+            id: albumId,
+        }, select: {
+            userId: true
+        }
+    })
+}
