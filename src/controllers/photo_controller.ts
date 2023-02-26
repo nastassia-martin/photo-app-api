@@ -4,7 +4,7 @@
 import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult, matchedData } from 'express-validator'
-import { getPhotos, createPhoto, updatePhoto, getPhoto } from '../services/photo_service'
+import { getPhotos, createPhoto, updatePhoto, getPhoto, deletePhoto } from '../services/photo_service'
 import prisma from '../prisma'
 
 // Create a new debug instance
@@ -140,6 +140,25 @@ export const update = async (req: Request, res: Response) => {
 export const destroy = async (req: Request, res: Response) => {
     const photoId = Number(req.params.photoId)
     const userId = Number(req.token!.sub)
+
+    try {
+        const connectedPhoto = await getPhoto(photoId)
+
+        if (connectedPhoto.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this photo"
+            })
+        }
+        debug("Error thrown when finding author with id %o: %o", req.params.photoId)
+
+        const result = await deletePhoto(photoId)
+        return res.status(200).send({ status: "success", data: null })
+    } catch {
+        debug("Error thrown when finding photo with id %o: photoId %o", photoId)
+
+        return res.status(404).send({ status: "fail", message: "photo not found" })
+    }
 
     // call GetPhoto() which will verify that user has authoity to delete, and that the photo exists
 
