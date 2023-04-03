@@ -127,8 +127,10 @@ export const login = async (req: Request, res: Response) => {
     // respond with access token & refresh token
     res.send({
         status: "success",
-        access_token: access_token,
-        refresh_token: refresh_token
+        data: {
+            access_token: access_token,
+            refresh_token: refresh_token
+        }
     })
 }
 
