@@ -5,7 +5,7 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import prisma from '../prisma'
-import { addPhoto, createAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
+import { addPhoto, createAlbum, deleteAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
 import { getPhoto } from '../services/photo_service'
 
 // Create a new debug instance
@@ -156,4 +156,22 @@ export const update = async (req: Request, res: Response) => {
  * Delete an album & links to photos but not the photos themselves, VG 
  */
 export const destroy = async (req: Request, res: Response) => {
+    const albumId = Number(req.params.albumId)
+    const userId = Number(req.token!.sub)
+
+    try {
+        const connectedAlbum = await getalbum(albumId)
+
+        if (connectedAlbum.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this album"
+            })
+        }
+        const result = await deleteAlbum(albumId)
+        return res.status(200).send({ status: "success", data: null })
+
+    } catch {
+        return res.status(404).send({ status: "fail", message: "album not found" })
+    }
 }
