@@ -2,6 +2,7 @@
  * Album Service
  * Here we host Prisma logic (ie queries)
  */
+import { connect } from 'http2'
 import prisma from '../prisma'
 import { CreateNewAlbum, UpdateAlbumData, } from '../types'
 
@@ -87,9 +88,26 @@ export const addPhoto = async (albumId: number, photoId: number) => {
         },
         data: {
             photos: {
-                connect: { id: photoId }
+                connect: { id: photoId } // one photo
             },
         },
+    })
+}
+
+export const addPhotos = async (albumId: number, photoIds: number) => {
+
+
+    return await prisma.album.update({
+        where: {
+            id: albumId
+        },
+        data: {
+            photos: {
+                connect: [
+                    { id: photoIds }
+                ]
+            }
+        }
     })
 }
 

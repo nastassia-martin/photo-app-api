@@ -25,7 +25,6 @@ export const index = async (req: Request, res: Response) => {
                 message: "no photos found"
             })
         }
-        console.log(photos)
         return res.status(200).send({
             status: "success",
             data: photos,

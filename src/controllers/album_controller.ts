@@ -6,7 +6,8 @@ import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import prisma from '../prisma'
 import { addPhoto, createAlbum, deleteAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
-import { getPhoto } from '../services/photo_service'
+import { getPhoto, getPhotos } from '../services/photo_service'
+import { userInfo } from 'os'
 
 // Create a new debug instance
 const debug = Debug('photo-api:album_controller 📝')
@@ -93,36 +94,87 @@ export const store = async (req: Request, res: Response) => {
  */
 export const storePhototoAlbum = async (req: Request, res: Response) => {
 
+    // const albumId = Number(req.params.albumId)
+    // const photoId = Number(req.body.photoId)
+    // const userId = Number(req.token!.sub)
+
+
+    // try {
+    //     const connectedAlbum = await getalbum(albumId)
+    //     if (connectedAlbum.userId !== userId) {
+    //         return res.status(403).send({
+    //             status: "fail",
+    //             message: "Not authorized to access this album"
+    //         })
+
+    //     }
+    //     const connectedPhoto = await getPhoto(photoId)
+    //     if (connectedPhoto.userId !== userId) {
+    //         return res.status(403).send({
+    //             status: "fail",
+    //             message: "Not authorized to access this photo"
+    //         })
+    //     }
+
+    //     const photo = await addPhoto(connectedAlbum.id, connectedPhoto.id)
+
+    //     res.status(200).send({
+    //         status: "success",
+    //         data: null,
+    //     })
+    // } catch (err) {
+    //     res.status(404).send({ status: "error", message: "Photo doesn't exist" })
+    // }
+}
+/**
+ * add photos to album
+ */
+export const storeManyPhotos = async (req: Request, res: Response) => {
     const albumId = Number(req.params.albumId)
-    const photoId = Number(req.body.photoId)
     const userId = Number(req.token!.sub)
-
-
+    // get all the photos in the body
+    const photoIds = req.body.photosIds.map((photoId: Number) => {
+        return {
+            id: photoId
+        }
+    })
     try {
         const connectedAlbum = await getalbum(albumId)
+        // user must be authorised to access album
         if (connectedAlbum.userId !== userId) {
             return res.status(403).send({
                 status: "fail",
                 message: "Not authorized to access this album"
             })
-
         }
-        const connectedPhoto = await getPhoto(photoId)
-        if (connectedPhoto.userId !== userId) {
-            return res.status(403).send({
-                status: "fail",
-                message: "Not authorized to access this photo"
-            })
-        }
-
-        const photo = await addPhoto(connectedAlbum.id, connectedPhoto.id)
-
-        res.status(200).send({
-            status: "success",
-            data: null,
+        // photos must belong to user
+        // select the user that matches the auth token
+        // retreive all photo ids belonging to that user
+        const connectedPhotos = await prisma.photo.findMany({
+            where: {
+                userId: userId,
+                // id: { in: photoIds }
+            },
+            select: {
+                id: true
+            }
         })
+        debug(connectedPhotos)
+
+        const result = await prisma.album.update({
+            where: { id: albumId },
+            data: {
+                photos: {
+                    connect: photoIds,
+                }
+            },
+        })
+        res.send(result)
     } catch (err) {
-        res.status(404).send({ status: "error", message: "Photo doesn't exist" })
+        res.status(404).send({ message: "Access denied" })
+        console.log(err)
+        debug("albumId", albumId)
+        debug("photoIds", photoIds)
     }
 }
 
@@ -175,3 +227,4 @@ export const destroy = async (req: Request, res: Response) => {
         return res.status(404).send({ status: "fail", message: "album not found" })
     }
 }
+
