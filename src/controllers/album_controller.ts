@@ -133,8 +133,8 @@ export const storeManyPhotos = async (req: Request, res: Response) => {
     const albumId = Number(req.params.albumId)
     const userId = Number(req.token!.sub)
     // get all the photos in the body
-    const photoIds: [] = req.body.photosIds
-    const test = req.body.photosIds.map((photoId: Number) => {
+    const photoIds: number[] = req.body.photosIds
+    const test: [] = req.body.photosIds.map((photoId: Number) => {
         return {
             id: photoId
         }
@@ -152,22 +152,36 @@ export const storeManyPhotos = async (req: Request, res: Response) => {
         }
         // photos must belong to user
         const photos = await prisma.photo.findMany({
-            where: { id: { in: photoIds } }
+            where: {
+                id: { in: photoIds },
+                userId: userId
+            },
+            select: { id: true }
         })
+        //const connectedUser = photos.map(photo => photo.id)
+        const found: boolean = photoIds.every((id: number) => {
+            return photos.find(photo => photo.id === id)
+        })
+        debug("photoIds", photoIds)
+        debug("photos", photos)
+        debug("found", found)
+        debug("test", test)
+        if (!found) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access all of these photos"
+            })
+        }
 
-
-        debug("photos", photoIds)
-        //returns an array of objects
-
-        // const result = await prisma.album.update({
-        //     where: { id: albumId },
-        //     data: {
-        //         photos: {
-        //             connect: test,
-        //         }
-        //     },
-        // })
-        res.send()
+        const result = await prisma.album.update({
+            where: { id: albumId },
+            data: {
+                photos: {
+                    connect: test,
+                }
+            },
+        })
+        res.send(result)
     } catch (err) {
         res.status(500).send({ message: "something went wrong" })
 
