@@ -133,11 +133,14 @@ export const storeManyPhotos = async (req: Request, res: Response) => {
     const albumId = Number(req.params.albumId)
     const userId = Number(req.token!.sub)
     // get all the photos in the body
-    const photoIds = req.body.photosIds.map((photoId: Number) => {
+    const photoIds: [] = req.body.photosIds
+    const test = req.body.photosIds.map((photoId: Number) => {
         return {
             id: photoId
         }
     })
+
+
     try {
         const connectedAlbum = await getalbum(albumId)
         // user must be authorised to access album
@@ -148,33 +151,27 @@ export const storeManyPhotos = async (req: Request, res: Response) => {
             })
         }
         // photos must belong to user
-        // select the user that matches the auth token
-        // retreive all photo ids belonging to that user
-        const connectedPhotos = await prisma.photo.findMany({
-            where: {
-                userId: userId,
-                // id: { in: photoIds }
-            },
-            select: {
-                id: true
-            }
+        const photos = await prisma.photo.findMany({
+            where: { id: { in: photoIds } }
         })
-        debug(connectedPhotos)
 
-        const result = await prisma.album.update({
-            where: { id: albumId },
-            data: {
-                photos: {
-                    connect: photoIds,
-                }
-            },
-        })
-        res.send(result)
+
+        debug("photos", photoIds)
+        //returns an array of objects
+
+        // const result = await prisma.album.update({
+        //     where: { id: albumId },
+        //     data: {
+        //         photos: {
+        //             connect: test,
+        //         }
+        //     },
+        // })
+        res.send()
     } catch (err) {
-        res.status(404).send({ message: "Access denied" })
-        console.log(err)
-        debug("albumId", albumId)
-        debug("photoIds", photoIds)
+        res.status(500).send({ message: "something went wrong" })
+
+        debug("err", err)
     }
 }
 
