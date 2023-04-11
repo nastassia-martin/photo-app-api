@@ -111,7 +111,7 @@ export const addPhotos = async (albumId: number, photoIds: []) => {
 }
 
 /**
- * Delete a album
+ * Delete an album
  * 
  */
 export const deleteAlbum = async (albumId: number) => {
@@ -122,5 +122,23 @@ export const deleteAlbum = async (albumId: number) => {
         }, select: {
             userId: true
         }
+    })
+}
+
+/**
+ * Diconnect photo from an album
+ * 
+ */
+
+export const disconnectPhoto = async (albumId: number, photoId: number) => {
+    return await prisma.album.update({
+        where: {
+            id: albumId,
+        },
+        data: {
+            photos: {
+                disconnect: { id: photoId } // one photo
+            },
+        },
     })
 }

@@ -5,7 +5,8 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import prisma from '../prisma'
-import { addPhotos, createAlbum, deleteAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
+import { addPhotos, createAlbum, deleteAlbum, disconnectPhoto, getalbum, getAlbums, updateAlbum } from '../services/album_service'
+import { getPhoto } from '../services/photo_service'
 
 
 // Create a new debug instance
@@ -148,7 +149,7 @@ export const storePhotostoAlbum = async (req: Request, res: Response) => {
             data: null,
         })
     } catch (err) {
-        res.status(404).send({ status: "error", message: "Something went wrong with the server" })
+        res.status(500).send({ status: "fail", message: "Something went wrong with the server" })
     }
 }
 
@@ -174,7 +175,6 @@ export const update = async (req: Request, res: Response) => {
     } catch {
         return res.status(500).send({ status: "error", message: "Something went wrong in our server" })
     }
-
 }
 
 /**
@@ -203,6 +203,36 @@ export const destroy = async (req: Request, res: Response) => {
 /**
  * Remove a photo from an album (but not the photo itself!), VG 
  */
-export const disconnectPhoto = async (req: Request, res: Response) => {
+export const removePhoto = async (req: Request, res: Response) => {
+    const userId = Number(req.token!.sub)
+    const albumId = Number(req.params.albumId)
+    const photoId = Number(req.params.photoId)
 
+    try {
+        const connectedAlbum = await getalbum(albumId)
+        // user must be authorised to access album
+        if (connectedAlbum.userId !== userId) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this album"
+            })
+        }
+        debug(connectedAlbum.photos)
+        const photo = connectedAlbum.photos.find(photo => photo.id === photoId)
+
+        debug("photo", photo)
+        if (!photo) {
+            return res.status(403).send({
+                status: "fail",
+                message: "Not authorized to access this photo"
+            })
+        }
+        await disconnectPhoto(connectedAlbum.id, photoId)
+        res.status(200).send({
+            status: "success",
+            data: null,
+        })
+    } catch {
+        return res.status(404).send({ status: "fail", message: "album not found" })
+    }
 }

@@ -2,7 +2,7 @@
  * Albums router
  */
 import express from 'express'
-import { index, show, store, update, destroy, storePhotostoAlbum } from '../controllers/album_controller'
+import { index, show, store, update, destroy, storePhotostoAlbum, removePhoto } from '../controllers/album_controller'
 import { albumRules } from '../validations/album_rules'
 const router = express.Router()
 
@@ -40,5 +40,6 @@ router.delete('/:albumId', destroy)
 /**
  * DELETE /albums/:albumId/photos/:photoId
  */
-router.delete('/:albumId/photos/:photoId', disconnectPhoto)
+router.delete('/:albumId/photos/:photoId', removePhoto)
+
 export default router
