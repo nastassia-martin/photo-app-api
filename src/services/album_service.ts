@@ -94,7 +94,7 @@ export const addPhoto = async (albumId: number, photoId: number) => {
     })
 }
 
-export const addPhotos = async (albumId: number, photoIds: number) => {
+export const addPhotos = async (albumId: number, photoIds: []) => {
 
 
     return await prisma.album.update({
@@ -103,9 +103,8 @@ export const addPhotos = async (albumId: number, photoIds: number) => {
         },
         data: {
             photos: {
-                connect: [
-                    { id: photoIds }
-                ]
+                connect: photoIds
+
             }
         }
     })

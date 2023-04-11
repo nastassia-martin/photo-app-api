@@ -5,9 +5,8 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import prisma from '../prisma'
-import { addPhoto, createAlbum, deleteAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
-import { getPhoto, getPhotos } from '../services/photo_service'
-import { userInfo } from 'os'
+import { addPhotos, createAlbum, deleteAlbum, getalbum, getAlbums, updateAlbum } from '../services/album_service'
+
 
 // Create a new debug instance
 const debug = Debug('photo-api:album_controller 📝')
@@ -90,58 +89,16 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
- * add photo to album
- */
-export const storePhototoAlbum = async (req: Request, res: Response) => {
-
-    // const albumId = Number(req.params.albumId)
-    // const photoId = Number(req.body.photoId)
-    // const userId = Number(req.token!.sub)
-
-
-    // try {
-    //     const connectedAlbum = await getalbum(albumId)
-    //     if (connectedAlbum.userId !== userId) {
-    //         return res.status(403).send({
-    //             status: "fail",
-    //             message: "Not authorized to access this album"
-    //         })
-
-    //     }
-    //     const connectedPhoto = await getPhoto(photoId)
-    //     if (connectedPhoto.userId !== userId) {
-    //         return res.status(403).send({
-    //             status: "fail",
-    //             message: "Not authorized to access this photo"
-    //         })
-    //     }
-
-    //     const photo = await addPhoto(connectedAlbum.id, connectedPhoto.id)
-
-    //     res.status(200).send({
-    //         status: "success",
-    //         data: null,
-    //     })
-    // } catch (err) {
-    //     res.status(404).send({ status: "error", message: "Photo doesn't exist" })
-    // }
-}
-/**
- * add photos to album
+ * add 1 or more photo(s) to album
  */
 export const storePhotostoAlbum = async (req: Request, res: Response) => {
-    const albumId = Number(req.params.albumId)
     const userId = Number(req.token!.sub)
     // get all the photos in the body
     const photoIds: number[] = req.body.photosIds
-    const test: [] = req.body.photosIds.map((photoId: Number) => {
-        return {
-            id: photoId
-        }
-    })
 
 
     try {
+        const albumId = Number(req.params.albumId)
         const connectedAlbum = await getalbum(albumId)
         // user must be authorised to access album
         if (connectedAlbum.userId !== userId) {
@@ -158,14 +115,20 @@ export const storePhotostoAlbum = async (req: Request, res: Response) => {
             },
             select: { id: true }
         })
-        //const connectedUser = photos.map(photo => photo.id)
+
         const found: boolean = photoIds.every((id: number) => {
             return photos.find(photo => photo.id === id)
         })
         debug("photoIds", photoIds)
         debug("photos", photos)
         debug("found", found)
-        debug("test", test)
+
+        if (photoIds.length === 0) {
+            return res.status(404).send({
+                status: "fail",
+                message: "No photos found"
+            })
+        }
         if (!found) {
             return res.status(403).send({
                 status: "fail",
@@ -173,19 +136,19 @@ export const storePhotostoAlbum = async (req: Request, res: Response) => {
             })
         }
 
-        const result = await prisma.album.update({
-            where: { id: albumId },
-            data: {
-                photos: {
-                    connect: test,
-                }
-            },
+        const mappedIds: [] = req.body.photosIds.map((photoId: Number) => {
+            return {
+                id: photoId
+            }
         })
-        res.send(result)
-    } catch (err) {
-        res.status(500).send({ message: "something went wrong" })
+        await addPhotos(connectedAlbum.id, mappedIds)
 
-        debug("err", err)
+        res.status(200).send({
+            status: "success",
+            data: null,
+        })
+    } catch (err) {
+        res.status(404).send({ status: "error", message: "Something went wrong with the server" })
     }
 }
 
@@ -206,7 +169,6 @@ export const update = async (req: Request, res: Response) => {
 
     try {
         const albumData = await updateAlbum(req.token!.sub, validatedData)
-
         return res.status(200).send({ status: "success", data: albumData })
 
     } catch {
@@ -238,4 +200,9 @@ export const destroy = async (req: Request, res: Response) => {
         return res.status(404).send({ status: "fail", message: "album not found" })
     }
 }
+/**
+ * Remove a photo from an album (but not the photo itself!), VG 
+ */
+export const disconnectPhoto = async (req: Request, res: Response) => {
 
+}

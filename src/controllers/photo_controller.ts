@@ -5,7 +5,7 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult, matchedData } from 'express-validator'
 import { getPhotos, createPhoto, updatePhoto, getPhoto, deletePhoto } from '../services/photo_service'
-import prisma from '../prisma'
+
 
 // Create a new debug instance
 const debug = Debug('photo-api:photo_controller 📝')
@@ -133,10 +133,7 @@ export const update = async (req: Request, res: Response) => {
     }
 
     try {
-
         const photoData = await updatePhoto(photoId, validatedData)
-
-
         return res.status(200).send({ status: "success", data: photoData })
 
     } catch {
@@ -162,7 +159,7 @@ export const destroy = async (req: Request, res: Response) => {
         }
         debug("Error thrown when finding author with id %o: %o", req.params.photoId)
 
-        const result = await deletePhoto(photoId)
+        await deletePhoto(photoId)
         return res.status(200).send({ status: "success", data: null })
     } catch {
         debug("Error thrown when finding photo with id %o: photoId %o", photoId)

@@ -24,7 +24,6 @@ router.post('/', albumRules, store)
 /**
  * POST /albums/:albumId/photos
  */
-//router.post('/:albumId/photos', albumRules, storePhototoAlbum)
 router.post('/:albumId/photos', albumRules, storePhotostoAlbum)
 
 /**
@@ -38,4 +37,8 @@ router.patch('/:albumId', albumRules, update)
  */
 router.delete('/:albumId', destroy)
 
+/**
+ * DELETE /albums/:albumId/photos/:photoId
+ */
+router.delete('/:albumId/photos/:photoId', disconnectPhoto)
 export default router
