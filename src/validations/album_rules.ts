@@ -2,7 +2,6 @@
  * Validation rules for albums
  */
 import { body } from 'express-validator'
-import prisma from '../prisma'
 
 /**
  * title string required must be at least 3 chars long 

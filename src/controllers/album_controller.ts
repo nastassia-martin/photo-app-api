@@ -129,7 +129,7 @@ export const storePhototoAlbum = async (req: Request, res: Response) => {
 /**
  * add photos to album
  */
-export const storeManyPhotos = async (req: Request, res: Response) => {
+export const storePhotostoAlbum = async (req: Request, res: Response) => {
     const albumId = Number(req.params.albumId)
     const userId = Number(req.token!.sub)
     // get all the photos in the body

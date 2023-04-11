@@ -113,16 +113,30 @@ export const update = async (req: Request, res: Response) => {
     // Get only the validated data from the request
     const validatedData = matchedData(req)
     const userId = Number(req.token!.sub)
+    const photoId = Number(req.params.photoId)
 
-    if (!userId) {
-        return res.status(401).send({
+    try {
+        const photo = await getPhoto(photoId)
+
+        if (photo.userId !== userId) {
+            return res.status(401).send({
+                status: "fail",
+                message: "Not authorized to access this photo"
+            })
+        }
+
+    } catch (err) {
+        return res.status(404).send({
             status: "fail",
-            message: "Not authorized to post this photo"
+            message: "No photos found"
         })
     }
 
     try {
-        const photoData = await updatePhoto(userId, validatedData)
+
+        const photoData = await updatePhoto(photoId, validatedData)
+
+
         return res.status(200).send({ status: "success", data: photoData })
 
     } catch {
