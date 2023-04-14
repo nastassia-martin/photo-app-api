@@ -95,7 +95,7 @@ export const store = async (req: Request, res: Response) => {
 export const storePhotostoAlbum = async (req: Request, res: Response) => {
     const userId = Number(req.token!.sub)
     // get all the photos in the body
-    const photoIds: number[] = req.body.photosIds
+    const photoIds: number[] = req.body.photo_id
 
 
     try {
@@ -137,7 +137,7 @@ export const storePhotostoAlbum = async (req: Request, res: Response) => {
             })
         }
 
-        const mappedIds: [] = req.body.photosIds.map((photoId: Number) => {
+        const mappedIds: [] = req.body.photo_id.map((photoId: Number) => {
             return {
                 id: photoId
             }
