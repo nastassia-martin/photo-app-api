@@ -17,6 +17,6 @@ A user can:
 ## Tech stack
 
 - language: Typescript
-- ORM: pPrisma
+- ORM: Prisma
 - framework: Node.js with Express (minimum version 4.18)
 - middleware: Morgan
